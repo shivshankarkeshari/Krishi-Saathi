@@ -1,0 +1,52 @@
+name: krishi-saathi
+services:
+  app:
+    build: .
+    image: krishi-saathi:local
+    ports:
+      - "127.0.0.1:${PORT:-3000}:3000"
+    environment:
+      LOCAL_DEMO: "1"
+      SPEECH_URL: http://speech:8000
+      OLLAMA_URL: "${OLLAMA_URL:-}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3:4b}"
+    depends_on:
+      speech:
+        condition: service_healthy
+    volumes:
+      - case-data:/app/.wrangler/state
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 8
+  speech:
+    build: ./speech
+    image: krishi-saathi-speech:local
+    environment:
+      WHISPER_MODEL: base
+      HF_HUB_DISABLE_TELEMETRY: "1"
+    volumes:
+      - speech-models:/models
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 8
+    restart: unless-stopped
+  tests:
+    image: krishi-saathi:local
+    profiles: ["test"]
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://app:3000
+      TEST_PROXY_IDENTITY: "1"
+    entrypoint: ["sh", "-c", "npm test && npm run test:integration"]
+volumes:
+  case-data:
+  speech-models:

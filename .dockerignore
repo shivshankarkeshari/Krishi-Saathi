@@ -1,0 +1,14 @@
+node_modules
+.git
+.wrangler
+.sites-runtime
+dist
+.next
+.vinext
+.env*
+!.env.example
+.dev.vars*
+outputs
+work
+*.tsbuildinfo
+.DS_Store

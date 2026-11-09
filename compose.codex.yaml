@@ -1,0 +1,10 @@
+# The bridge runs on the host. Its CLI login is never mounted into Docker.
+# Start the bridge on host loopback first. Docker Desktop can reach it through
+# host.docker.internal. Prefer Ollama if your platform does not support this.
+services:
+  app:
+    environment:
+      AI_BRIDGE_URL: http://host.docker.internal:9191
+      AI_BRIDGE_TOKEN: "${AI_BRIDGE_TOKEN:-}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

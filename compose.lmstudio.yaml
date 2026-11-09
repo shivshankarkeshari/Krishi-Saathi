@@ -1,0 +1,10 @@
+services:
+  app:
+    environment:
+      OPENAI_MODEL: openai/lfm3-omni-2b
+      OPENAI_API_KEY: lm-studio
+      OPENAI_BASE_URL: http://host.docker.internal:1234/v1
+      AI_BRIDGE_URL: ""
+      OLLAMA_URL: ""
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

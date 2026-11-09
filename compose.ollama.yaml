@@ -1,0 +1,28 @@
+services:
+  app:
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: qwen3:4b
+    depends_on:
+      model-init:
+        condition: service_completed_successfully
+  ollama:
+    image: ollama/ollama:0.13.5
+    volumes:
+      - model-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  model-init:
+    image: ollama/ollama:0.13.5
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["ollama", "pull", "qwen3:4b"]
+volumes:
+  model-data:
